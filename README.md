@@ -31,7 +31,7 @@ HOST-GPU-PCIe-Contention/
     │   └── notes.txt
     ├── Makefile
     └── .gitignore
-
+```
 ## Baseline Experiment
 
 The baseline experiment consists of two CUDA programs:
