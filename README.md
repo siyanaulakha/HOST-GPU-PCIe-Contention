@@ -1,13 +1,13 @@
 ````markdown
-# HOST-GPU-PCIe-Contention
+ HOST-GPU-PCIe-Contention
 
 This repository studies PCIe bus contention between the host and GPU as a basis for observable side-channel behavior. The baseline experiment demonstrates that contention on the shared host–GPU PCIe path can be externally observed through transfer latency measurements, and that pinned-memory transfers amplify the signal more clearly than pageable-memory transfers.
 
-## Repository Overview
+ Repository Overview
 
 The repository currently contains a baseline implementation and saved experiment outputs.
 
-```text
+
 HOST-GPU-PCIe-Contention/
 └── baseline_covertChannel/
     ├── src/
