@@ -1,0 +1,21 @@
+
+  bytes:                 32768 
+  TIMES_REPEAT:          1 
+  THRESHOLD:             30000 
+  TIMES_MEASURED:        5000
+  TIMES_REPEAT_SENDER:   6 
+
+Enter one of the following arguments
+ 1: getPinnedH2DBandwidth()
+ 2: printSignal()
+ 3: receiveInfPin()
+ 4: interpreter()
+ 5: receivePacketFromSignal()
+ 6: decodeManchester()
+ 7: fingerprinting()
+ 9: getAvgCycForPin()
+ 11: getPageableH2DBandwidth()
+ 20: getPinnedH2DBandwidth(4)
+     getPageableH2DBandwidth(4)
+ 23: receiveInfPag()
+ 25: receivePacketFromSignal_2()

@@ -1,0 +1,43 @@
+=== Experiment Notes ===
+
+[Date]
+Saturday 11 April 2026 03:38:30 PM IST
+
+[Machine]
+Alienware
+Alienware m16 R2
+
+[GPU]
+NVIDIA GeForce RTX 4070 Laptop GPU, 580.126.09, 8188 MiB
+
+[Ubuntu Version]
+Distributor ID:	Ubuntu
+Description:	Ubuntu 22.04.5 LTS
+Release:	22.04
+Codename:	jammy
+
+[CUDA Version]
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2021 NVIDIA Corporation
+Built on Thu_Nov_18_09:45:30_PST_2021
+Cuda compilation tools, release 11.5, V11.5.119
+Build cuda_11.5.r11.5/compiler.30672275_0
+
+[Counts]
+Idle ones: 217
+Pageable ones: 1018
+Pinned ones: 5077
+
+[Key Commands]
+  780  nvidia-smi
+  781  nvcc --version
+  810  nvidia-smi
+  817  ./sender 9
+  818  ./receiver 2 > pageable_signal.txt
+  825  python3 analyze_bits.py
+  834  python3 analyze_bits.py
+  842  nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
+  846  nvcc --version
+  847  nvidia-smi
+  848  history | grep -E 'nvcc|sender|receiver|python3 analyze_bits.py|nvidia-smi'
+  852  {   echo "=== Experiment Notes ===";   echo;   echo "[Date]";   date;   echo;   echo "[Machine]";   cat /sys/devices/virtual/dmi/id/sys_vendor;   cat /sys/devices/virtual/dmi/id/product_name;   echo;   echo "[GPU]";   nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader;   echo;   echo "[Ubuntu Version]";   lsb_release -a 2>/dev/null || cat /etc/os-release;   echo;   echo "[CUDA Version]";   nvcc --version;   echo;   echo "[Counts]";   echo "Idle ones: $(tr -cd '01' < results/idle_signal.txt | fold -w1 | grep -c 1)";   echo "Pageable ones: $(tr -cd '01' < results/pageable_signal.txt | fold -w1 | grep -c 1)";   echo "Pinned ones: $(tr -cd '01' < results/pinned_signal.txt | fold -w1 | grep -c 1)";   echo;   echo "[Key Commands]";   history | grep -E 'nvcc|sender|receiver|python3 analyze_bits.py|nvidia-smi' | tail -30; } | tee results/notes.txt
