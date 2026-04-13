@@ -1,12 +1,13 @@
 CC=nvcc
+HOSTCC=g++-10
 
-all: program1 program2
+all: receiver sender
 
-program1:
-	$(CC) receiver.cu -o receiver.out
+receiver:
+	$(CC) -ccbin $(HOSTCC) src/receiver.cu -o receiver.out
 
-program2:
-	$(CC) sender.cu -o sender.out
+sender:
+	$(CC) -ccbin $(HOSTCC) src/sender.cu -o sender.out
 
 test:
 	./receiver.out
