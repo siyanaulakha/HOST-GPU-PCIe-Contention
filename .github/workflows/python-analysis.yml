@@ -1,0 +1,28 @@
+name: CPU analysis checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile Python files
+        run: python -m compileall -q analysis tests
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Analyze saved traces when present
+        run: |
+          files=(baseline_covertChannel/results/idle_signal.txt baseline_covertChannel/results/pageable_signal.txt baseline_covertChannel/results/pinned_signal.txt)
+          if [[ -f "${files[0]}" && -f "${files[1]}" && -f "${files[2]}" ]]; then
+            make analyze
+          else
+            echo 'Saved trace triplet is incomplete; skipping trace analysis.'
+          fi

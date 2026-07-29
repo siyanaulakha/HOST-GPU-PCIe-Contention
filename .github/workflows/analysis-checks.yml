@@ -1,0 +1,29 @@
+name: Analysis checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run analysis tests
+        run: make test PYTHON=python
+
+      - name: Regenerate saved-trace results
+        run: make analyze PYTHON=python
+
+      - name: Verify committed results
+        run: git diff --exit-code -- results/generated
