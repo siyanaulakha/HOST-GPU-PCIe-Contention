@@ -1,0 +1,25 @@
+
+*~
+*.a
+baseline_covertChannel/receiver
+baseline_covertChannel/receiver.out
+baseline_covertChannel/sender
+baseline_covertChannel/sender.out
+build/
+# CUDA build outputs
+# CUDA build products
+# Editor backups
+.env
+# Local Python environment
+*.o
+*.out
+__pycache__/
+*.py[cod]
+# Python
+receiver
+results/generated/
+results/raw_local/
+sender
+*.so
+.venv/
+venv/

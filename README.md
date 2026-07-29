@@ -1,169 +1,83 @@
-# HOST-GPU-PCIe-Contention
+# Host–GPU PCIe Contention Characterization
 
-This repository studies PCIe bus contention between the host and GPU as a basis for observable side-channel behavior. The baseline experiment demonstrates that contention on the shared host–GPU PCIe path can be externally observed through transfer latency measurements, and that pinned-memory transfers amplify the signal more clearly than pageable-memory transfers.
+CUDA experiments for measuring receiver-visible timing changes caused by contention on a shared host–GPU PCIe transfer path.
 
-## Repository Overview
+## Current evidence boundary
 
-The repository currently contains a baseline implementation and saved experiment outputs.
+The public baseline contains CUDA sender/receiver programs, repeat/modulation scripts, and saved idle, pageable, and pinned traces. The available repository organization supports a qualitative claim that contention is observable and that pinned-memory behavior produced clearer separation in the evaluated setup.
 
-```text
-HOST-GPU-PCIe-Contention/
-└── baseline_covertChannel/
-    ├── src/
-    │   ├── sender.cu
-    │   └── receiver.cu
-    ├── scripts/
-    │   ├── analyze_bits.py
-    │   ├── collect_runs.sh
-    │   ├── modulated_demo.sh
-    │   ├── plot_modulation.py
-    │   ├── plot_repeats.py
-    │   ├── summarize_modulation.py
-    │   └── summarize_results.py
-    ├── results/
-    │   ├── repeats/
-    │   ├── modulation/
-    │   ├── idle_signal.txt
-    │   ├── pageable_signal.txt
-    │   ├── pinned_signal.txt
-    │   ├── bitstream_preview.png
-    │   ├── ones_bar.png
-    │   └── notes.txt
-    ├── Makefile
-    └── .gitignore
-```
-## Baseline Experiment
+It does **not** yet support a reviewed numerical claim for bitrate, bit-error rate, cross-VM operation, or portability across systems.
 
-The baseline experiment consists of two CUDA programs:
+## Repository hygiene
 
-* **Receiver**: measures transfer latency and records timing behavior
-* **Sender**: generates PCIe contention to influence the receiver’s observations
+The original tree appears to track compiled `receiver`/`sender` files and a backup file such as `idle_signal.txt~`. Remove generated binaries and editor backups from Git history going forward. Keep raw measurements, plots, and reviewed summaries clearly separated.
 
-The main idea is to compare receiver-side timing under different conditions:
-
-* idle / no sender activity
-* contention from sender activity
-* pageable-memory transfer behavior
-* pinned-memory transfer behavior
-
-This establishes whether shared PCIe resource contention is measurable and whether it can serve as a side-channel signal.
-
-## Key Observations from the Baseline
-
-The baseline results show:
-
-* measurable latency differences between idle and contention conditions
-* clearer signal behavior with pinned-memory transfers compared to pageable-memory transfers
-* observable ON/OFF modulation patterns under sender-driven activity
-
-These results support the feasibility of PCIe-contention-based side-channel observation.
-
-## Folder Description
-
-### `baseline_covertChannel/src/`
-
-Contains the CUDA source code for the sender and receiver programs.
-
-### `baseline_covertChannel/scripts/`
-
-Contains helper scripts for:
-
-* collecting repeated runs
-* analyzing extracted bit patterns
-* summarizing results
-* plotting repeat and modulation results
-
-### `baseline_covertChannel/results/`
-
-Contains saved outputs and plots from the baseline experiment.
-
-* `repeats/` stores repeated-run outputs and related plots
-* `modulation/` stores outputs from sender ON/OFF modulation experiments
-* top-level `.txt` and `.png` files summarize baseline observations
-
-## Build Instructions
-
-### Requirements
-
-* NVIDIA GPU with CUDA support
-* CUDA toolkit
-* `nvcc`
-* compatible host compiler for CUDA 11.5
-  In this setup, `g++-10` was used as the host compiler.
-
-### Build
-
-From inside `baseline_covertChannel`:
+## CPU-only analysis
 
 ```bash
+python3 -m unittest discover -s tests -p 'test_*.py' -v
+
+python3 analysis/quantify_signals.py \
+  baseline_covertChannel/results/idle_signal.txt \
+  baseline_covertChannel/results/pageable_signal.txt \
+  baseline_covertChannel/results/pinned_signal.txt \
+  --markdown results/generated/timing_summary.md \
+  --json results/generated/timing_summary.json \
+  --csv results/generated/timing_summary.csv
+```
+
+The parser treats the last numeric token on each non-comment line as the measurement by default. Verify this policy against the CUDA output format before publication.
+
+## State classification
+
+```bash
+python3 analysis/classify_states.py \
+  baseline_covertChannel/results/idle_signal.txt \
+  baseline_covertChannel/results/pinned_signal.txt \
+  --output results/generated/state_classification.json
+```
+
+The classifier calibrates on the first half of each trace and evaluates on the second half. This is a simple reproducible baseline, not a security-proof classifier.
+
+## Bit metrics
+
+```bash
+python3 analysis/bit_metrics.py \
+  --expected 01010101 \
+  --observed 01000101 \
+  --duration-seconds 0.8
+```
+
+Only report bitrate and BER when the expected bitstream, decoded bitstream, and measured transmission duration are preserved.
+
+## GPU reproduction
+
+```bash
+cd baseline_covertChannel
 make clean
 make
 ```
 
-This generates:
-
-* `receiver.out`
-* `sender.out`
-
-## Running the Baseline
-
-From inside `baseline_covertChannel`:
+Capture the environment before every session:
 
 ```bash
-./receiver.out
-./receiver.out 1
-./sender.out
-./sender.out 1
+bash scripts/capture_environment.sh results/raw_local/environment.txt
 ```
 
-Depending on the experiment, the receiver may be run alone for baseline measurement or together with the sender to induce contention.
+Record GPU, driver, CUDA toolkit, host compiler, PCIe generation/link width, transfer size/direction, allocation mode, power state, trial count, and experiment session.
 
-## Analysis
+## Claim policy
 
-The scripts in `scripts/` can be used to:
+Safe after reviewed trace analysis:
 
-* collect repeated measurements
-* analyze observed bit patterns
-* summarize modulation windows
-* generate plots for repeated runs and modulation experiments
+- host–GPU contention was receiver-observable in the evaluated setup;
+- pinned-memory measurements showed stronger timing separation than pageable-memory measurements, when supported by the computed statistics;
+- sender-driven ON/OFF modulation was visible in saved traces.
 
-Example workflow:
+Requires new measurement:
 
-1. run receiver in idle and contention settings
-2. save output traces
-3. process traces using the analysis scripts
-4. generate plots to compare observable behavior
-
-## Results Included
-
-The repository currently includes saved baseline outputs such as:
-
-* idle signal traces
-* pageable and pinned signal traces
-* repeated-run measurements
-* modulation-window outputs
-* summary plots
-
-These are retained to document the baseline behavior and support reproducibility.
-
-## Extension Plan
-
-The `main` branch preserves the baseline experiment.
-
-Future extended work may be added separately to avoid modifying the baseline implementation directly. This can include:
-
-* raw latency plotting in cycles
-* bitrate and BER characterization
-* message decoding experiments
-* modified modulation or transfer configurations
-
-## Notes
-
-This repository is organized to preserve the baseline experiment cleanly before further extension. The baseline folder is intended to remain a stable reference point for subsequent experiments and analysis.
-
-## Author
-
-Siya Naulakha
-
-```
-```
+- channel bitrate and BER;
+- false-positive/false-negative rates across independent sessions;
+- cross-process or cross-VM behavior;
+- generalization across systems;
+- practical exploitability.
